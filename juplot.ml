@@ -73,7 +73,7 @@ module Figure (H: Handle) = struct
   let ex cmd = output_string H.h (cmd^"\n")
   let flush () = flush H.h
   let close () = ignore (Unix.close_process_out H.h)
-  let output () = 
+  let display () = 
     ex "unset output";
     flush ();
     close ();
