@@ -68,6 +68,47 @@ module PNG (P: module type of Defaults) : Handle = struct
 end
 
 
+(* set properties *)
+
+type axis = [ `x | `x2 | `y | `y2 | `z | `cb ]
+
+let string_of_axis = function 
+  | `x -> "x" 
+  | `x2 -> "x2" 
+  | `y -> "y" 
+  | `y2 -> "y2" 
+  | `z -> "z" 
+  | `cb -> "cb"
+
+type _ property =
+  | Title       : string property
+  | Label       : (axis * string) property
+  | Range       : (axis * (float * float)) property
+  | Tics        : (axis * ([ `list of (float * string) list 
+                           | `def of (float * float * float)])) property
+  | Key         : string property
+  | Palette     : string property
+  | Format      : (axis * string) property
+  | Autoscale   : axis property
+  | Logscale    : axis property
+  | Text        : (int * string) property
+  | Border      : [ `L | `R | `T | `B ] list property
+  | Colorbox    : string property
+  | Prop        : string property
+
+type _ unset_property =
+  | Title       : unit unset_property
+  | Label       : axis unset_property
+  | Tics        : axis unset_property
+  | Key         : unit unset_property
+  | Autoscale   : axis unset_property
+  | Logscale    : axis unset_property
+  | Text        : int unset_property
+  | Border      : unit unset_property
+  | Colorbox    : unit unset_property
+  | Prop        : string unset_property
+
+
 module Figure (H: Handle) = struct
 
   let ex cmd = output_string H.h (cmd^"\n")
@@ -135,45 +176,6 @@ module Figure (H: Handle) = struct
     send_matrix mat
 
 
-  (* set properties *)
-
-  type axis = [ `x | `x2 | `y | `y2 | `z | `cb ]
-
-  let string_of_axis = function 
-    | `x -> "x" 
-    | `x2 -> "x2" 
-    | `y -> "y" 
-    | `y2 -> "y2" 
-    | `z -> "z" 
-    | `cb -> "cb"
-
-  type _ property =
-    | Title       : string property
-    | Label       : (axis * string) property
-    | Range       : (axis * (float * float)) property
-    | Tics        : (axis * ([ `list of (float * string) list 
-                             | `def of (float * float * float)])) property
-    | Key         : string property
-    | Palette     : string property
-    | Format      : (axis * string) property
-    | Autoscale   : axis property
-    | Logscale    : axis property
-    | Text        : (int * string) property
-    | Border      : [ `L | `R | `T | `B ] list property
-    | Colorbox    : string property
-    | Prop        : string property
-
-  type _ unset_property =
-    | Title       : unit unset_property
-    | Label       : axis unset_property
-    | Tics        : axis unset_property
-    | Key         : unit unset_property
-    | Autoscale   : axis unset_property
-    | Logscale    : axis unset_property
-    | Text        : int unset_property
-    | Border      : unit unset_property
-    | Colorbox    : unit unset_property
-    | Prop        : string unset_property
 
   let load s = ex (sprintf "load '%s'" s)
 
@@ -262,6 +264,8 @@ end
 
 
 module Quick ( ) = Figure (SVG (Defaults))
+
+module type T = module type of Quick ( )
 
 
 
