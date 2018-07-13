@@ -14,6 +14,7 @@ end
 
 module type Handle = sig
   val h: out_channel
+  val base64: bool
   val mime: string
   val file: string
 end
@@ -21,6 +22,7 @@ end
 
 module SVG (P: module type of Defaults) : Handle = struct
 
+  let base64 = false
   let mime = "image/svg+xml"
   let file = P.file_root ^ ".svg"
 
@@ -44,6 +46,7 @@ end
 
 module PNG (P: module type of Defaults) : Handle = struct
 
+  let base64 = true
   let mime = "image/png"
   let file = P.file_root ^ ".png"
 
@@ -78,7 +81,7 @@ module Figure (H: Handle) = struct
     let n = in_channel_length ic in
     let data = really_input_string ic n in
     close_in ic ;
-    ignore (Jupyter_notebook.display ~base64:true H.mime data);
+    ignore (Jupyter_notebook.display ~base64:H.base64 H.mime data);
     ()
 
   let end_signal () = fprintf H.h "e\n%!"
@@ -134,29 +137,100 @@ module Figure (H: Handle) = struct
 
   (* set properties *)
 
+  type axis = [ `x | `x2 | `y | `y2 | `z | `cb ]
+
+  let string_of_axis = function 
+    | `x -> "x" 
+    | `x2 -> "x2" 
+    | `y -> "y" 
+    | `y2 -> "y2" 
+    | `z -> "z" 
+    | `cb -> "cb"
+
   type _ property =
-    | Title : string property
-    | XLabel : string property
-    | YLabel : string property
-    | ZLabel : string property
-    | XRange : (float * float) property
-    | YRange : (float * float) property
-    | ZRange : (float * float) property
+    | Title       : string property
+    | Label       : (axis * string) property
+    | Range       : (axis * (float * float)) property
+    | Tics        : (axis * ([ `list of (float * string) list 
+                             | `def of (float * float * float)])) property
+    | Key         : string property
+    | Palette     : string property
+    | Format      : (axis * string) property
+    | Autoscale   : axis property
+    | Logscale    : axis property
+    | Text        : (int * string) property
+    | Border      : [ `L | `R | `T | `B ] list property
+    | Colorbox    : string property
+    | Prop        : string property
+
+  type _ unset_property =
+    | Title       : unit unset_property
+    | Label       : axis unset_property
+    | Tics        : axis unset_property
+    | Key         : unit unset_property
+    | Autoscale   : axis unset_property
+    | Logscale    : axis unset_property
+    | Text        : int unset_property
+    | Border      : unit unset_property
+    | Colorbox    : unit unset_property
+    | Prop        : string unset_property
+
+  let load s = ex (sprintf "load '%s'" s)
+
 
   let set (type a) ?o (prop: a property) (x: a) = 
     let cmd = match prop with
       | Title -> sprintf "set title '%s'" x
+      | Label -> 
+        let ax, lbl = x in
+        sprintf "set %slabel '%s'" (string_of_axis ax) lbl
+      | Range ->
+        let ax, (a, b) = x in
+        sprintf "set %srange [%f:%f]" (string_of_axis ax) a b
+      | Tics -> 
+        let ax, ti = x in
+        sprintf "set %stics %s" (string_of_axis ax)
+          (match ti with
+           | `list s -> 
+             let z = String.concat ", " (List.map (fun (x,la) -> sprintf "'%s' %f" la x) s) in
+             sprintf "( %s )" z
+           | `def (a0,step,a1) -> sprintf "%f, %f, %f" a0 step a1)
+      | Key -> sprintf "set key %s" x
+      | Palette -> sprintf "set palette %s" x
+      | Format -> 
+        let ax, fmt = x in
+        sprintf "set format %s %s" (string_of_axis ax) fmt
+      | Autoscale -> sprintf "set autoscale %s" (string_of_axis x) 
+      | Logscale -> sprintf "set logscale %s" (string_of_axis x) 
+      | Text ->
+        let id, lbl = x in
+        sprintf "set label %i %s" id lbl
+      | Border ->
+        let total = List.fold_left (fun accu side ->
+            accu + match side with `B -> 1 | `L -> 2 | `T -> 4 | `R -> 8) 0 x in
+        sprintf "set border %i" total
+      | Colorbox -> sprintf "set colorbox %s" x
+      | Prop -> sprintf "set %s" x
 
-      | XLabel -> sprintf "set xlabel '%s'" x
-      | YLabel -> sprintf "set ylabel '%s'" x
-      | ZLabel -> sprintf "set zlabel '%s'" x
-
-      | XRange -> sprintf "set xrange [%f:%f]" (fst x) (snd x)
-      | YRange -> sprintf "set yrange [%f:%f]" (fst x) (snd x)
-      | ZRange -> sprintf "set zrange [%f:%f]" (fst x) (snd x)
     in
     let cmd = match o with Some o -> sprintf "%s %s" cmd o | None -> cmd in
     ex cmd
+
+  let unset (type a) (prop: a unset_property) (x: a) = 
+    let cmd = match prop with
+      | Title -> "unset title"
+      | Label -> sprintf "unset %slabel" (string_of_axis x)
+      | Tics -> sprintf "unset %stics" (string_of_axis x)
+      | Key -> "unset key"
+      | Autoscale -> sprintf "unset autoscale %s" (string_of_axis x)
+      | Logscale -> sprintf "unset logscale %s" (string_of_axis x)
+      | Text -> sprintf "unset label %i" x
+      | Border -> "unset border"
+      | Colorbox -> "unset colorbox"
+      | Prop -> sprintf "unset %s" x
+    in
+    ex cmd
+
 
   let margins = List.iter (function
       | `T x -> ex (sprintf "set tmargin at screen %f" x)
@@ -187,7 +261,7 @@ end
 
 
 
-module Quick ( ) = Figure (PNG (Defaults))
+module Quick ( ) = Figure (SVG (Defaults))
 
 
 
