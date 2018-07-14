@@ -1,8 +1,6 @@
 open Printf
-open Owl
 
-
-let figure ?gnuplot ?size ?init () =
+let draw ?gnuplot ?size ?init (f : (module Gp.Figure) -> unit) =
   let module O = struct
     include Gp.SVG
     let post_action = 
@@ -17,6 +15,8 @@ let figure ?gnuplot ?size ?init () =
       | Some (w, h) -> term_opts @ [ sprintf "size %i,%i" w h ]
       | None -> term_opts
   end in
-  Gp.figure ?gnuplot ?init ~to_file:"/tmp/juplot_tmp" (module O)
-
+  let fig = Gp.figure ?gnuplot ?init ~to_file:"/tmp/juplot_tmp" (module O) in
+  let module F = (val fig: Gp.Figure) in
+  f (module F);
+  F.draw ()
 
