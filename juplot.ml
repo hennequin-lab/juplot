@@ -1,18 +1,21 @@
 open Printf
 
-let draw ?gnuplot ?size ?init (f : (module Gp.Figure) -> unit) =
+let draw ?gnuplot ?(fmt=`png) ?size ?init (f : (module Gp.Figure) -> unit) =
+  let (module Out), mime, base64, opts = match fmt with
+    | `png -> ((module Gp.PNG: Gp.Output), "image/png", true, "enhanced transparent crop")
+    | `svg -> ((module Gp.SVG: Gp.Output), "image/svg+xml", false, "standalone") in
   let module O = struct
-    include Gp.SVG
-    let term =
+    include Out
+    let term = 
       let term = match size with Some s -> { term with size = Some s } | None -> term in
-      { term with other = Some "mouse standalone" }
+      { term with other = Some opts }
     let post_action = 
       Some (fun root ->
-          let ic = open_in_bin (root ^ ".svg") in
+          let ic = open_in_bin (root ^ file_ext) in
           let n = in_channel_length ic in
           let data = really_input_string ic n in
           close_in ic ;
-          ignore (Jupyter_notebook.display ~base64:false "image/svg+xml" data);
+          ignore (Jupyter_notebook.display ~base64 mime data);
           ())
   end in
   let fig = Gp.figure ?gnuplot ?init ~to_file:"/tmp/juplot_tmp" (module O) in
