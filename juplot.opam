@@ -15,4 +15,4 @@ depends: [
   "gp"
   "jupyter" {>= "2.4.0"}
 ]
-synposis: "Gnuplot within OCaml and Owl"
+synopsis: "Gnuplot in jupyter ocaml notebooks"
