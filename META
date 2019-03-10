@@ -1,4 +1,0 @@
-description = "Gnuplot within Jupyter notebook"
-version = "1"
-requires="gp,jupyter.notebook"
-archive(byte) = "juplot.cmo"
