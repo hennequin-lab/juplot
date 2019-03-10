@@ -1,5 +1,3 @@
-open Printf
-
 let draw ?gnuplot ?(fmt=`png) ?size ?init (f : (module Gp.Figure) -> unit) =
   let (module Out), mime, base64, opts = match fmt with
     | `png -> ((module Gp.PNG: Gp.Output), "image/png", true, "enhanced transparent crop")
