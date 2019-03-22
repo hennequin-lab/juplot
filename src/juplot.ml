@@ -16,7 +16,7 @@ let draw ?gnuplot ?(fmt=`png) ?size ?init (f : (module Gp.Figure) -> unit) =
           ignore (Jupyter_notebook.display ~base64 mime data);
           ())
   end in
-  let fig = Gp.figure ?gnuplot ?init ~to_file:"/tmp/juplot_tmp" (module O) in
+  let fig = Gp.figure ?gnuplot ?init ~to_file:Filename.(temp_file "juplot_" ".png") (module O) in
   let module F = (val fig: Gp.Figure) in
   f (module F);
   F.draw ()
