@@ -1,4 +1,4 @@
-# Gnuplot in Jupyter ocaml notebooks
+# Gnuplot in Jupyter OCaml notebooks
 
 ```ocaml
 #require "owl, juplot"
