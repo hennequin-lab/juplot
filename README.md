@@ -1,5 +1,7 @@
 # Gnuplot in Jupyter OCaml notebooks
 
+Please see the [API documentation](http://hennequin-lab.github.io/juplot).
+
 ```ocaml
 #require "owl, juplot"
 open Owl
