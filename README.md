@@ -1,6 +1,6 @@
 # Gnuplot in Jupyter OCaml notebooks
 
-Please see the [API documentation](http://hennequin-lab.github.io/juplot).
+Please see the [API documentation](http://hennequin-lab.github.io/docs/juplot/Juplot).
 
 ```ocaml
 #require "owl, juplot"
