@@ -1,8 +1,7 @@
 val draw
-  :  ?display_id:Jupyter_notebook.display_id
-  -> ?gnuplot:string
+  :  ?prms:Gp.prms
+  ->  ?display_id:Jupyter_notebook.display_id
   -> ?fmt:[ `png | `svg ]
   -> ?size:int * int
-  -> ?init:string
   -> ((module Gp.Figure) -> unit)
   -> unit
