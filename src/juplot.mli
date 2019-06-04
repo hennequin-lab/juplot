@@ -3,5 +3,5 @@ val draw
   ->  ?display_id:Jupyter_notebook.display_id
   -> ?fmt:[ `png | `svg ]
   -> ?size:int * int
-  -> ((module Gp.Figure) -> unit)
+  -> ((module Gp.Plot) -> unit)
   -> unit
