@@ -1,6 +1,6 @@
 let tmp_root = if Sys.is_directory "/dev/shm" then "/dev/shm" else "tmp"
 
-let draw ?prms ?display_id ?(fmt = `png) ?size fig =
+let draw ?prms ?display_id ?(fmt = `svg) ?size fig =
   let file = Printf.sprintf "%s/juplot" tmp_root in
   let output, mime, base64, ext =
     match fmt with
