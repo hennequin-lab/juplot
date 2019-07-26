@@ -1,4 +1,4 @@
-let tmp_root = if Sys.is_directory "/dev/shm" then "/dev/shm" else "tmp"
+let tmp_root = if Sys.is_directory "/dev/shm" then "/dev/shm" else "/tmp"
 
 let draw ?prms ?display_id ?(fmt = `svg) ?size fig =
   let file = Printf.sprintf "%s/juplot" tmp_root in
