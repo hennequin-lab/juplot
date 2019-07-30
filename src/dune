@@ -1,3 +1,4 @@
 (library
  (public_name juplot)
+ (modes byte)
  (libraries jupyter.notebook gp))
