@@ -1,4 +1,8 @@
-let tmp_root = if Sys.is_directory "/dev/shm" then "/dev/shm" else "/tmp"
+let tmp_root =
+  match Unix.stat "/dev/shm" with
+  | {st_kind = S_DIR; _} -> "/dev/shm"
+  | _ -> "/tmp"
+  | exception Unix.Unix_error (Unix.ENOENT, _, _) -> "/tmp"
 
 let draw ?prms ?display_id ?(fmt = `svg) ?size fig =
   let file = Printf.sprintf "%s/juplot" tmp_root in
